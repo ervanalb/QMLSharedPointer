@@ -1,97 +1,106 @@
 #pragma once
 
 #include <QSharedPointer>
-#include "StringConstant.h"
+#include <QtCore/private/qmetaobjectbuilder_p.h>
 
 template <class T>
 class QmlSharedPointer
-    : private QSharedPointer<T>
+    : public QObject
 {
-// The following is the Q_GADGET macro but written out explicitly
+// Q_OBJECT macro written out
 public:
-    static const QMetaObject staticMetaObject;
-    void qt_check_for_QGADGET_macro();
-    typedef void QtGadgetHelper;
-private:
     QT_WARNING_PUSH
+    Q_OBJECT_NO_OVERRIDE_WARNING
+    static const QMetaObject staticMetaObject;
+    //virtual const QMetaObject *metaObject() const;
+    //virtual void *qt_metacast(const char *);
+    //virtual int qt_metacall(QMetaObject::Call, int, void **);
+    QT_TR_FUNCTIONS
+private:
     Q_OBJECT_NO_ATTRIBUTES_WARNING
     Q_DECL_HIDDEN_STATIC_METACALL static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
     QT_WARNING_POP
-    QT_ANNOTATE_CLASS(qt_qgadget, "")
-// end Q_GADGET macro
+    struct QPrivateSignal {};
+    QT_ANNOTATE_CLASS(qt_qobject, "")
 
 private:
     QMetaObject *m_metaobject;
+    QSharedPointer<T> m_dptr;
+
+// end Q_OBJECT
 
     void init()
     {
+        QMetaObjectBuilder b;
+        m_metaobject = b.toMetaObject();
     }
 
 public:
     QmlSharedPointer()
-        : QSharedPointer<T>()
+        : m_dptr()
     {
         init();
     }
 
     template <typename X> explicit QmlSharedPointer(X *ptr)
-        : QSharedPointer<T>(ptr)
+        : m_dptr(ptr)
     {
         init();
     }
 
     template <typename X, typename Deleter> QmlSharedPointer(X *ptr, Deleter d)
-        : QSharedPointer<T>(ptr, d)
+        : m_dptr(ptr, d)
     {
         init();
     }
 
     QmlSharedPointer(std::nullptr_t)
-        : QSharedPointer<T>(nullptr)
+        : m_dptr(nullptr)
     {
         init();
     }
 
     template <typename Deleter> QmlSharedPointer(std::nullptr_t, Deleter d)
-        : QSharedPointer<T>(nullptr, d)
+        : m_dptr(nullptr, d)
     {
         init();
     }
 
     QmlSharedPointer(const QSharedPointer<T> &other)
-        : QSharedPointer<T>(other)
+        : m_dptr(other)
     {
         init();
     }
 
     QmlSharedPointer(const QWeakPointer<T> &other)
-        : QSharedPointer<T>(other)
+        : m_dptr(other)
     {
         init();
+    }
+
+    virtual const QMetaObject *metaObject() const
+    {
+        //return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+        //return &staticMetaObject;
+        return m_metaobject; 
+    }
+
+    virtual void *qt_metacast(const char *)
+    {
+        Q_ASSERT(false);
+        return nullptr;
+    }
+
+    virtual int qt_metacall(QMetaObject::Call, int, void**)
+    {
+        Q_ASSERT(false);
+        return -1;
     }
 
     virtual ~QmlSharedPointer()
     {
-        init();
+        free(m_metaobject);
     }
-
-    //virtual const QMetaObject *metaObject() const
-    //{
-    //    Q_ASSERT(false);
-    //    return m_metaobject;
-    //}
-
-    //virtual void *qt_metacast(const char *)
-    //{
-    //    Q_ASSERT(false);
-    //    return nullptr;
-    //}
-
-    //virtual int qt_metacall(QMetaObject::Call, int, void**)
-    //{
-    //    Q_ASSERT(false);
-    //    return -1;
-    //}
 };
 
 struct qt_meta_stringdata_QmlSharedPointer_t {
@@ -139,3 +148,4 @@ QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::s
     nullptr,
     nullptr
 } };
+
