@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(qsp)
+project(qmlsp)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -14,18 +14,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ffast-math -march=n
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(Qt5Core REQUIRED)
-find_package(Qt5Quick REQUIRED)
 find_package(Qt5Qml REQUIRED)
 
-set(qsp_LIBRARIES)
-list(APPEND qsp_LIBRARIES
-    Qt5::Quick
+set(qmlsp_LIBRARIES)
+list(APPEND qmlsp_LIBRARIES
     Qt5::Qml
     )
 
-add_executable(qsp WIN32
+add_executable(qmlsp WIN32
     src/main.cpp
     src/ExampleQmlObject.cpp
               )
 
-target_link_libraries(qsp ${qsp_LIBRARIES})
+target_link_libraries(qmlsp ${qmlsp_LIBRARIES})

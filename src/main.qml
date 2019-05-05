@@ -3,7 +3,9 @@ import com.example.qsp 1.0
 
 QtObject {
     Component.onCompleted: {
-        var o = Factory.makeExampleQmlObject();
+        var o = Factory.makeExampleQmlObjectSP();
+
+        console.log("Got " + o);
 
         o.stringChanged.connect(function(v) {
             console.log("String changed to " + v);

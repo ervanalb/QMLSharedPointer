@@ -14,8 +14,9 @@ public slots:
         return o;
     }
 
-    QmlSharedPointer<ExampleQmlObject> makeExampleQmlObjectSP() {
-        QmlSharedPointer<ExampleQmlObject> o(new ExampleQmlObject());
+    QmlSharedPointer<ExampleQmlObject> *makeExampleQmlObjectSP() {
+        auto o = new QmlSharedPointer<ExampleQmlObject>(new ExampleQmlObject());
+        qDebug() << "Factory made" << o;
         return o;
     }
 };
@@ -34,6 +35,14 @@ int main(int argc, char** argv)
 
     qmlRegisterSingletonType<Factory>("com.example.qsp", 1, 0, "Factory", &provider);
     qmlRegisterType<ExampleQmlObject>("com.example.qsp", 1, 0, "ExampleQmlObject");
+
+    qDebug() << QmlSharedPointer<ExampleQmlObject>::staticMetaObject.className();
+
+    //auto mo = QmlSharedPointer<ExampleQmlObject>::staticMetaObject;
+    //qDebug() << mo.className();
+
+    qmlRegisterUncreatableType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP", "Can't create shared pointers from within QML");
+    //qmlRegisterType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP"); // Requires a QObject-derived class
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QString("../src/main.qml")));
