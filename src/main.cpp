@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QQmlApplicationEngine>
 #include "ExampleQmlObject.h"
+#include "QmlSharedPointer.h"
+#include <QDebug>
 
 int main(int argc, char** argv)
 {
