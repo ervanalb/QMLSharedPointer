@@ -23,6 +23,9 @@ list(APPEND qsp_LIBRARIES
     Qt5::Qml
     )
 
-add_executable(qsp WIN32 src/main.cpp)
+add_executable(qsp WIN32
+    src/main.cpp
+    src/ExampleQmlObject
+              )
 
 target_link_libraries(qsp ${qsp_LIBRARIES})
