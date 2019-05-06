@@ -114,20 +114,35 @@ public:
 
 struct qt_meta_stringdata_QmlSharedPointer_t {
     QByteArrayData data[1];
-    char stringdata0[];
 };
-#define QT_MOC_LITERAL(idx, ofs, len) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    qptrdiff(offsetof(qt_meta_stringdata_QmlSharedPointer_t, stringdata0) + ofs \
+
+// This method gets run before main()
+// and is very limited in what it can do,
+// hence the old-school C string manipulation
+template <typename T>
+static const char *get_class_name_string() {
+    static char c[128]{};
+    strcpy(c, "QmlSharedPointer<");
+    strncat(c, T::staticMetaObject.className(), 127);
+    strncat(c, ">", 127);
+    return c;
+}
+
+template <typename T> 
+static const char *class_name_string = get_class_name_string<T>();
+
+#define QT_MOC_LITERAL(idx, ptr) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET((int)strlen(ptr), \
+    qptrdiff(qintptr(ptr) - qintptr(&qt_meta_stringdata_QmlSharedPointer<T>) \
         - idx * sizeof(QByteArrayData)) \
     )
 template <typename T> static const qt_meta_stringdata_QmlSharedPointer_t qt_meta_stringdata_QmlSharedPointer = {
     {
-        QT_MOC_LITERAL(0, 0, 18), // "QmlSharedPointer<ExampleQmlObject>"
-    },
+        QT_MOC_LITERAL(0, class_name_string<T>), // "QmlSharedPointer<ExampleQmlObject>"
+    }
     //"QmlSharedPointer<" + T::staticMetaObject.className() + ">\0"
-    "QmlSharedPointer<" "ExampleQmlObject" ">\0"
 };
+
 #undef QT_MOC_LITERAL
 
 static const uint qt_meta_data_QmlSharedPointer[] = {
