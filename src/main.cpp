@@ -4,6 +4,9 @@
 #include "QmlSharedPointer.h"
 #include <QDebug>
 
+//Q_DECLARE_METATYPE(QmlSharedPointer<ExampleQmlObject>*)
+//Q_DECLARE_METATYPE_TEMPLATE_1ARG(QmlSharedPointer<ExampleQmlObject>*)
+
 class Factory : public QObject {
     Q_OBJECT
 
@@ -33,6 +36,7 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
+    //qRegisterMetaType<QmlSharedPointer<ExampleQmlObject>*>();
     qmlRegisterSingletonType<Factory>("com.example.qsp", 1, 0, "Factory", &provider);
     qmlRegisterType<ExampleQmlObject>("com.example.qsp", 1, 0, "ExampleQmlObject");
 
@@ -41,8 +45,8 @@ int main(int argc, char** argv)
     //auto mo = QmlSharedPointer<ExampleQmlObject>::staticMetaObject;
     //qDebug() << mo.className();
 
-    qmlRegisterUncreatableType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP", "Can't create shared pointers from within QML");
-    //qmlRegisterType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP"); // Requires a QObject-derived class
+    //qmlRegisterUncreatableType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP", "Can't create shared pointers from within QML");
+    qmlRegisterType<QmlSharedPointer<ExampleQmlObject>>("com.example.qsp", 1, 0, "ExampleQmlObjectSP");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QString("../src/main.qml")));

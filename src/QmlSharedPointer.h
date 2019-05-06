@@ -12,9 +12,6 @@ public:
     QT_WARNING_PUSH
     Q_OBJECT_NO_OVERRIDE_WARNING
     static const QMetaObject staticMetaObject;
-    //virtual const QMetaObject *metaObject() const;
-    //virtual void *qt_metacast(const char *);
-    //virtual int qt_metacall(QMetaObject::Call, int, void **);
     QT_TR_FUNCTIONS
 private:
     Q_OBJECT_NO_ATTRIBUTES_WARNING
@@ -24,15 +21,29 @@ private:
     QT_ANNOTATE_CLASS(qt_qobject, "")
 
 private:
-    QMetaObject *m_metaobject;
+    const QMetaObject *m_metaobject;
     QSharedPointer<T> m_dptr;
-
 // end Q_OBJECT
 
     void init()
     {
-        QMetaObjectBuilder b;
-        m_metaobject = b.toMetaObject();
+        //QMetaObjectBuilder b;
+
+        //auto className = QMetaObject::normalizedType(QString("QmlSharedPointer<%1>").arg(m_dptr->metaObject()->className()).toLatin1());
+        //b.setClassName(className);
+        //b.setSuperClass(&QObject::staticMetaObject);
+        //b.addMetaObject(m_dptr->metaObject());
+        //m_metaobject = b.toMetaObject();
+
+        m_metaobject = m_dptr->metaObject();
+
+        const int qObjectMethodCount = QObject::staticMetaObject.methodCount();
+        for (int i = qObjectMethodCount; i < m_dptr->metaObject()->methodCount(); i++)
+        {
+            auto incomingSignal = m_dptr->metaObject()->method(i);
+            if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
+            QMetaObject::connect(m_dptr.data(), i, this, i);
+        }
     }
 
 public:
@@ -83,6 +94,7 @@ public:
         //return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
         //return &staticMetaObject;
         return m_metaobject; 
+        //return m_dptr->metaObject();
     }
 
     virtual void *qt_metacast(const char *)
@@ -91,15 +103,48 @@ public:
         return nullptr;
     }
 
-    virtual int qt_metacall(QMetaObject::Call, int, void**)
+//void *ExampleQmlObject::qt_metacast(const char *_clname)
+//{
+//    if (!_clname) return nullptr;
+//    if (!strcmp(_clname, qt_meta_stringdata_ExampleQmlObject.stringdata0))
+//        return static_cast<void*>(this);
+//    return QObject::qt_metacast(_clname);
+//}
+
+    virtual int qt_metacall(QMetaObject::Call _c, int _id, void** _a)
     {
-        Q_ASSERT(false);
-        return -1;
+        //return m_dptr->qt_metacall(_c, _id, _a); // Dangerous??
+        //Q_ASSERT(false);
+        //return -1;
+        if (_c == QMetaObject::InvokeMetaMethod) {
+            auto method = metaObject()->method(_id);
+            auto sig = QMetaObject::normalizedSignature(method.methodSignature());
+            if (method.methodType() == QMetaMethod::Signal) {
+                auto newId = _id - QObject::staticMetaObject.methodCount();
+                QMetaObject::activate(this, metaObject(), newId, _a);
+                return -1;
+            } else {
+                if (_id < QObject::staticMetaObject.methodCount()) {
+                    // Handle things like deleteLater internally
+                    return QObject::qt_metacall(_c, _id, _a);
+                } else {
+                    // Forward on anything else
+                    return m_dptr->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same, but it appears to be the same so :shrug:
+                }
+            }
+        } else if (_c == QMetaObject::IndexOfMethod ||
+                   _c == QMetaObject::ReadProperty || 
+                   _c == QMetaObject::WriteProperty ||
+                   _c == QMetaObject::ResetProperty) {
+            return m_dptr->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same
+        } else {
+            return -1;
+        }
     }
 
     virtual ~QmlSharedPointer()
     {
-        free(m_metaobject);
+        //free(m_metaobject);
     }
 };
 
@@ -114,11 +159,11 @@ struct qt_meta_stringdata_QmlSharedPointer_t {
     )
 template <typename T> static const qt_meta_stringdata_QmlSharedPointer_t qt_meta_stringdata_QmlSharedPointer = {
     {
-        QT_MOC_LITERAL(0, 0, 34), // "QmlSharedPointer<ExampleQmlObject>"
+        QT_MOC_LITERAL(0, 0, 18), // "QmlSharedPointer<ExampleQmlObject>"
     },
     //"QmlSharedPointer<" + T::staticMetaObject.className() + ">\0"
-    "QmlSharedPointer<"  "ExampleQmlObject"  ">\0"
-    //"ExampleQmlObjectSP\0"
+    //"QmlSharedPointer<"  "ExampleQmlObject"  ">\0"
+    "QmlSharedPointer<ExampleQmlObject>\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -148,4 +193,3 @@ QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::s
     nullptr,
     nullptr
 } };
-
