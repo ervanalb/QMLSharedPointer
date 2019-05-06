@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QSharedPointer>
-#include <QtCore/private/qmetaobjectbuilder_p.h>
 
 template <class T>
 class QmlSharedPointer
@@ -19,101 +18,71 @@ private:
     QT_WARNING_POP
     struct QPrivateSignal {};
     QT_ANNOTATE_CLASS(qt_qobject, "")
-
-private:
-    const QMetaObject *m_metaobject;
-    QSharedPointer<T> m_dptr;
 // end Q_OBJECT
 
+private:
     void init()
     {
-        //QMetaObjectBuilder b;
-
-        //auto className = QMetaObject::normalizedType(QString("QmlSharedPointer<%1>").arg(m_dptr->metaObject()->className()).toLatin1());
-        //b.setClassName(className);
-        //b.setSuperClass(&QObject::staticMetaObject);
-        //b.addMetaObject(m_dptr->metaObject());
-        //m_metaobject = b.toMetaObject();
-
-        m_metaobject = m_dptr->metaObject();
-
+        // Connect all signals from the encapsulated item to the QmlSharedPointer
+        // Skip QObject's signals (e.g. destroyed)
         const int qObjectMethodCount = QObject::staticMetaObject.methodCount();
-        for (int i = qObjectMethodCount; i < m_dptr->metaObject()->methodCount(); i++)
+        for (int i = qObjectMethodCount; i < p->metaObject()->methodCount(); i++)
         {
-            auto incomingSignal = m_dptr->metaObject()->method(i);
+            auto incomingSignal = p->metaObject()->method(i);
             if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
-            QMetaObject::connect(m_dptr.data(), i, this, i);
+            QMetaObject::connect(p.data(), i, this, i);
         }
     }
 
 public:
+    QSharedPointer<T> p;
+
     QmlSharedPointer()
-        : m_dptr()
+        : p(new T())
     {
         init();
     }
 
     template <typename X> explicit QmlSharedPointer(X *ptr)
-        : m_dptr(ptr)
+        : p(ptr)
     {
         init();
     }
 
     template <typename X, typename Deleter> QmlSharedPointer(X *ptr, Deleter d)
-        : m_dptr(ptr, d)
-    {
-        init();
-    }
-
-    QmlSharedPointer(std::nullptr_t)
-        : m_dptr(nullptr)
-    {
-        init();
-    }
-
-    template <typename Deleter> QmlSharedPointer(std::nullptr_t, Deleter d)
-        : m_dptr(nullptr, d)
+        : p(ptr, d)
     {
         init();
     }
 
     QmlSharedPointer(const QSharedPointer<T> &other)
-        : m_dptr(other)
+        : p(other)
     {
         init();
     }
 
     QmlSharedPointer(const QWeakPointer<T> &other)
-        : m_dptr(other)
+        : p(other)
     {
         init();
     }
 
     virtual const QMetaObject *metaObject() const
     {
-        //return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-        //return &staticMetaObject;
-        return m_metaobject; 
-        //return m_dptr->metaObject();
+        // This is sketchy but it works, and might be less sketchy than using QMetaObjectBuilder
+        return p->metaObject();
     }
 
     virtual void *qt_metacast(const char *)
     {
+        // Disable casting
         Q_ASSERT(false);
         return nullptr;
     }
 
-//void *ExampleQmlObject::qt_metacast(const char *_clname)
-//{
-//    if (!_clname) return nullptr;
-//    if (!strcmp(_clname, qt_meta_stringdata_ExampleQmlObject.stringdata0))
-//        return static_cast<void*>(this);
-//    return QObject::qt_metacast(_clname);
-//}
-
     virtual int qt_metacall(QMetaObject::Call _c, int _id, void** _a)
     {
-        //return m_dptr->qt_metacall(_c, _id, _a); // Dangerous??
+        //return p->qt_metacall(_c, _id, _a); // Dangerous??
         //Q_ASSERT(false);
         //return -1;
         if (_c == QMetaObject::InvokeMetaMethod) {
@@ -129,22 +98,17 @@ public:
                     return QObject::qt_metacall(_c, _id, _a);
                 } else {
                     // Forward on anything else
-                    return m_dptr->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same, but it appears to be the same so :shrug:
+                    return p->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same, but it appears to be the same so :shrug:
                 }
             }
         } else if (_c == QMetaObject::IndexOfMethod ||
                    _c == QMetaObject::ReadProperty || 
                    _c == QMetaObject::WriteProperty ||
                    _c == QMetaObject::ResetProperty) {
-            return m_dptr->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same
+            return p->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same
         } else {
             return -1;
         }
-    }
-
-    virtual ~QmlSharedPointer()
-    {
-        //free(m_metaobject);
     }
 };
 
@@ -162,8 +126,7 @@ template <typename T> static const qt_meta_stringdata_QmlSharedPointer_t qt_meta
         QT_MOC_LITERAL(0, 0, 18), // "QmlSharedPointer<ExampleQmlObject>"
     },
     //"QmlSharedPointer<" + T::staticMetaObject.className() + ">\0"
-    //"QmlSharedPointer<"  "ExampleQmlObject"  ">\0"
-    "QmlSharedPointer<ExampleQmlObject>\0"
+    "QmlSharedPointer<" "ExampleQmlObject" ">\0"
 };
 #undef QT_MOC_LITERAL
 
