@@ -60,10 +60,22 @@ public:
         init();
     }
 
+    QmlSharedPointer(const QmlSharedPointer<T> &other)
+        : QSharedPointer<T>(other)
+    {
+        init();
+    }
+
     QmlSharedPointer(const QWeakPointer<T> &other)
         : QSharedPointer<T>(other)
     {
         init();
+    }
+
+    QmlSharedPointer<T>& operator=(const QmlSharedPointer<T>& d)
+    {
+        QSharedPointer<T>::operator=(d);
+        return *this;
     }
 
     virtual const QMetaObject *metaObject() const
