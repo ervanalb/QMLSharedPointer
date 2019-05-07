@@ -34,6 +34,18 @@ private:
             QMetaObject::connect(QmlSharedPointer<T>::data(), i, this, i);
         }
     }
+    void deinit()
+    {
+        // Disconnect all signals from the encapsulated item to the QmlSharedPointer
+        // Skip QObject's signals (e.g. destroyed)
+        const int qObjectMethodCount = QObject::staticMetaObject.methodCount();
+        for (int i = qObjectMethodCount; i < QmlSharedPointer<T>::data()->metaObject()->methodCount(); i++)
+        {
+            auto incomingSignal = QmlSharedPointer<T>::data()->metaObject()->method(i);
+            if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
+            QMetaObject::disconnect(QmlSharedPointer<T>::data(), i, this, i);
+        }
+    }
 
 public:
     QmlSharedPointer()
@@ -74,7 +86,9 @@ public:
 
     QmlSharedPointer<T>& operator=(const QmlSharedPointer<T>& d)
     {
+        deinit();
         QSharedPointer<T>::operator=(d);
+        init();
         return *this;
     }
 
