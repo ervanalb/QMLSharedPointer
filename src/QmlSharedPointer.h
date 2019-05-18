@@ -177,14 +177,14 @@ static const char *get_class_name_string() {
 template <typename T> 
 static const char *class_name_string = get_class_name_string<T>();
 
-#define QT_MOC_LITERAL(idx, ptr) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET((int)strlen(ptr), \
+#define QT_MOC_LITERAL(idx, ptr, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
     qptrdiff(qintptr(ptr) - qintptr(&qt_meta_stringdata_QmlSharedPointer<T>) \
         - idx * sizeof(QByteArrayData)) \
     )
 template <typename T> static const qt_meta_stringdata_QmlSharedPointer_t qt_meta_stringdata_QmlSharedPointer = {
     {
-        QT_MOC_LITERAL(0, class_name_string<T>), // "QmlSharedPointer<ExampleQmlObject>"
+        QT_MOC_LITERAL(0, class_name_string<T>, (int)strlen(class_name_string<T>)), // "QmlSharedPointer<ExampleQmlObject>"
     }
     //"QmlSharedPointer<" + T::staticMetaObject.className() + ">\0"
 };
@@ -267,7 +267,62 @@ const QMetaObject *QmlSharedPointer<T>::gen_superdata()
 template<typename T>
 const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
 {
-    return T::staticMetaObject.d.stringdata;
+    int n_strings = T::staticMetaObject.constructorCount()
+                  + T::staticMetaObject.classInfoCount()
+                  + T::staticMetaObject.enumeratorCount()
+                  + T::staticMetaObject.methodCount()
+                  + T::staticMetaObject.propertyCount();
+
+    Q_UNUSED(n_strings);
+
+    //const QByteArrayDataPtr data = { const_cast<QByteArrayData*>(&T::staticMetaObject.d.stringdata[index]) };
+
+    const int MAX_N_STRINGS = 128;
+    Q_ASSERT(n_strings <= MAX_N_STRINGS);
+    static QByteArrayData new_stringdata[MAX_N_STRINGS];
+
+    for (int i=0; i<MAX_N_STRINGS; i++) {
+        new_stringdata[i].ref.atomic.store(-1); // Don't attempt to free
+    }
+
+    for (int i=0; i<n_strings; i++) {
+        //memcpy(&new_stringdata[i], &T::staticMetaObject.d.stringdata[i], sizeof(QByteArrayData));
+        //new_stringdata[i] = T::staticMetaObject.d.stringdata[i], sizeof(QByteArrayData);
+        new_stringdata[i].size = T::staticMetaObject.d.stringdata[i].size;
+        new_stringdata[i].offset = T::staticMetaObject.d.stringdata[i].offset + ((qptrdiff)&(T::staticMetaObject.d.stringdata[i]) - (qptrdiff)&new_stringdata[i]);
+        //qDebug() << "old stringdata[i] lives at" << (quintptr)&(T::staticMetaObject.d.stringdata[i]);
+        //qDebug() << "new stringdata[i] lives at" << (quintptr)&new_stringdata[i];
+        //qDebug() << "Old offset is" << T::staticMetaObject.d.stringdata[i].offset;
+        //qDebug() << "New size is" << new_stringdata[i].size << "and new offset is" << new_stringdata[i].offset;
+    }
+
+    // Override the first string, which is the name:
+    const int MAX_N_CHARS = 128;
+    static char new_name[MAX_N_CHARS]{};
+    strcpy(new_name, "QmlSharedPointer<");
+    strncat(new_name, T::staticMetaObject.className(), 127);
+    strncat(new_name, ">", 127);
+    new_stringdata[0].size = strlen(new_name);
+    new_stringdata[0].offset = ((qptrdiff)&new_name - (qptrdiff)&new_stringdata[0]);
+
+    const QByteArrayDataPtr first = { const_cast<QByteArrayData*>(&new_stringdata[0]) };
+    //const QByteArrayDataPtr last = { const_cast<QByteArrayData*>(&new_stringdata[n_strings - 1]) };
+
+    qDebug() << "new_stringdata[0]" << (QByteArray)first;
+ 
+    //quintptr first = (quintptr)QByteArray(first).constData();
+    //size_t length = (quintptr)QByteArray(last).constData() - first + QByteArray(first).size() + 1;
+
+    ////auto first_byte = (quintptr)first;
+    ////auto last_byte = (quintptr)last;
+    ////auto size_last = (quintptr)QByteArray(QByteArrayDataPtr{last}).size();
+
+    ////std::cout << "First string:" << (QByteArray)data;
+    //qDebug() << "length" << (quintptr)QByteArray(last).constData() << (quintptr)QByteArray(first).constData();// << last_byte - first_byte;
+    ////qDebug() << "last" << size_last;
+
+    //return T::staticMetaObject.d.stringdata;
+    return new_stringdata;
 }
 
 template<typename T>
