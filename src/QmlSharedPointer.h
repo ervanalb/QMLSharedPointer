@@ -96,6 +96,36 @@ public:
         init();
         return *this;
     }
+
+    // The MOC doesn't generate this for us anymore
+    const QMetaObject *metaObject() const
+    {
+        return &staticMetaObject;
+    }
+
+    void *qt_metacast(const char *_clname)
+    {
+        qDebug() << "Attempted metacast";
+        return nullptr; // disable casting
+    }
+
+    int qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+    {
+        const int n_methods = 8; // XXX
+        _id = QObject::qt_metacall(_c, _id, _a);
+        if (_id < 0)
+            return _id;
+        if (_c == QMetaObject::InvokeMetaMethod) {
+            if (_id < n_methods)
+                qt_static_metacall(this, _c, _id, _a);
+            _id -= n_methods;
+        } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+            if (_id < n_methods)
+                *reinterpret_cast<int*>(_a[0]) = -1;
+            _id -= n_methods;
+        }
+        return _id;
+    }
 };
 
 template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
