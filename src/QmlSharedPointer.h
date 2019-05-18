@@ -187,10 +187,9 @@ const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
                   + T::staticMetaObject.methodCount()
                   + T::staticMetaObject.propertyCount();
 
-    Q_UNUSED(n_strings);
-
-    //const QByteArrayDataPtr data = { const_cast<QByteArrayData*>(&T::staticMetaObject.d.stringdata[index]) };
-
+    // Copy the child's string data
+    // (copy the lookup table, but don't copy the actual strings.
+    // Just point the new lookup table at the old strings)
     const int MAX_N_STRINGS = 128;
     Q_ASSERT(n_strings <= MAX_N_STRINGS);
     static QByteArrayData new_stringdata[MAX_N_STRINGS];
