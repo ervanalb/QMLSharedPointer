@@ -7,7 +7,6 @@ ExampleQmlObject::ExampleQmlObject() {
 }
 
 int ExampleQmlObject::addToInteger(int number1, int number2) {
-    qDebug() << this << "object's QML context:" << QQmlEngine::contextForObject(this);
     return m_integer + number1 + number2;
 }
 
@@ -20,14 +19,13 @@ void ExampleQmlObject::fireSignal() {
 }
 
 int ExampleQmlObject::getFive() {
-    qDebug() << "this is" << this;
-    qDebug() << "integer" << m_integer;
-    qDebug() << "string" << m_string;
+    qDebug() << "in getFive: this is" << this;
+    qDebug() << "in getFive: integer is" << m_integer;
+    qDebug() << "in getFive: string is" << m_string;
     return 5;
 }
 
 void ExampleQmlObject::setFive(int five) {
-    qDebug() << "this is" << this;
     qDebug() << "You can't change five!";
 }
 

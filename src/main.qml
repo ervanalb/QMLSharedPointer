@@ -1,21 +1,23 @@
 import QtQuick 2.0
 import com.example.qsp 1.0
 
-QtObject {
-    Component.onCompleted: {
-        var o = Factory.makeExampleQmlObjectSP();
+Item {
+    ExampleQmlObjectSP {
+        id: o
 
-        console.log("Got " + o);
-
-        o.stringChanged.connect(function(v) {
-            console.log("String changed to " + v);
-        })
-        o.integerChanged.connect(function(v) {
-            console.log("Integer changed to " + v);
-        })
-        o.signalFired.connect(function() {
+        onStringChanged: {
+            console.log("String changed to " + string);
+        }
+        onIntegerChanged: {
+            console.log("Integer changed to " + integer);
+        }
+        onSignalFired: {
             console.log("Signal fired!");
-        })
+        }
+    }
+
+    Component.onCompleted: {
+        console.log("Got " + o);
 
         console.log("Created a QML object!");
 
