@@ -10,7 +10,6 @@ class Factory : public QObject {
 public slots:
     ExampleQmlObject *makeExampleQmlObject() {
         auto o = new ExampleQmlObject();
-        QQmlEngine::setObjectOwnership(o, QQmlEngine::JavaScriptOwnership);
         return o;
     }
 

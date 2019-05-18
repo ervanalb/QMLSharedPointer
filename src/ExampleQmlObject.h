@@ -7,6 +7,7 @@ class ExampleQmlObject : public QObject {
 
     Q_PROPERTY(int integer MEMBER m_integer NOTIFY integerChanged);
     Q_PROPERTY(QString string MEMBER m_string NOTIFY stringChanged);
+    Q_PROPERTY(int five READ getFive WRITE setFive);
 
 signals:
     void integerChanged(int integer);
@@ -15,11 +16,14 @@ signals:
 
 public:
     ExampleQmlObject();
+    ~ExampleQmlObject();
 
 public slots:
     int addToInteger(int number1, int number2);
     QString addToString(QString str1, QString str2);
     void fireSignal();
+    int getFive();
+    void setFive(int five);
 
 private:
     int m_integer{};

@@ -27,9 +27,9 @@ private:
         // Connect all signals from the encapsulated item to the QmlSharedPointer
         // Skip QObject's signals (e.g. destroyed)
         const int qObjectMethodCount = QObject::staticMetaObject.methodCount();
-        for (int i = qObjectMethodCount; i < QmlSharedPointer<T>::data()->metaObject()->methodCount(); i++)
+        for (int i = qObjectMethodCount; i < T::staticMetaObject.methodCount(); i++)
         {
-            auto incomingSignal = QmlSharedPointer<T>::data()->metaObject()->method(i);
+            auto incomingSignal = T::staticMetaObject.method(i);
             if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
             QMetaObject::connect(QmlSharedPointer<T>::data(), i, this, i);
         }
@@ -39,13 +39,18 @@ private:
         // Disconnect all signals from the encapsulated item to the QmlSharedPointer
         // Skip QObject's signals (e.g. destroyed)
         const int qObjectMethodCount = QObject::staticMetaObject.methodCount();
-        for (int i = qObjectMethodCount; i < QmlSharedPointer<T>::data()->metaObject()->methodCount(); i++)
+        for (int i = qObjectMethodCount; i < T::staticMetaObject.methodCount(); i++)
         {
-            auto incomingSignal = QmlSharedPointer<T>::data()->metaObject()->method(i);
+            auto incomingSignal = T::staticMetaObject.method(i);
             if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
             QMetaObject::disconnect(QmlSharedPointer<T>::data(), i, this, i);
         }
     }
+    static const QMetaObject *gen_superdata();
+    static const QByteArrayData *gen_stringdata();
+    static const uint *gen_data();
+    static const QMetaObject * const *gen_relatedMetaObjects();
+    static void *gen_extradata();
 
 public:
     QmlSharedPointer()
@@ -92,54 +97,70 @@ public:
         return *this;
     }
 
-    virtual const QMetaObject *metaObject() const
-    {
+//    virtual const QMetaObject *metaObject() const
+//    {
         // This is sketchy but it works, and might be less sketchy than using QMetaObjectBuilder
-        return QmlSharedPointer<T>::data()->metaObject();
-    }
+        //return QmlSharedPointer<T>::data()->metaObject();
 
-    virtual void *qt_metacast(const char *)
-    {
-        // Disable casting
-        Q_ASSERT(false);
-        return nullptr;
-    }
+//QT_INIT_METAOBJECT const QMetaObject ExampleQmlObject::staticMetaObject = { {
+//    &QObject::staticMetaObject,
+//    qt_meta_stringdata_ExampleQmlObject.data,
+//    qt_meta_data_ExampleQmlObject,
+//    qt_static_metacall,
+//    nullptr,
+//    nullptr
+//} };
+//        return &childMetaObject;
+//    }
 
-    virtual int qt_metacall(QMetaObject::Call _c, int _id, void** _a)
-    {
-        //return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // Dangerous??
-        //Q_ASSERT(false);
-        //return -1;
-        if (_c == QMetaObject::InvokeMetaMethod) {
-            auto method = metaObject()->method(_id);
-            auto sig = QMetaObject::normalizedSignature(method.methodSignature());
-            if (method.methodType() == QMetaMethod::Signal) {
-                auto newId = _id - QObject::staticMetaObject.methodCount();
-                QMetaObject::activate(this, metaObject(), newId, _a);
-                return -1;
-            } else {
-                if (_id < QObject::staticMetaObject.methodCount()) {
-                    // Handle things like deleteLater internally
-                    return QObject::qt_metacall(_c, _id, _a);
-                } else {
-                    // Forward on anything else
-                    return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same, but it appears to be the same so :shrug:
-                }
-            }
-        } else if (_c == QMetaObject::IndexOfMethod ||
-                   _c == QMetaObject::ReadProperty || 
-                   _c == QMetaObject::WriteProperty ||
-                   _c == QMetaObject::ResetProperty) {
-            return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same
-        } else {
-            return -1;
-        }
-    }
+    //Virtual void *qt_metacast(const char *)
+    //{
+    //    qDebug() << "META-CAST????";
+    //    // Disable casting
+    //    Q_ASSERT(false);
+    //    return nullptr;
+    //}
 };
 
 struct qt_meta_stringdata_QmlSharedPointer_t {
     QByteArrayData data[1];
 };
+
+//template<typename T>
+//void QmlSharedPointer<T>::qt_static_metacall(QMetaObject::Call _c, int _id, void** _a)
+//{
+//    qDebug() << "meta-call!" << _c;
+//    //return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // Dangerous??
+//    //Q_ASSERT(false);
+//    //return -1;
+//    if (_c == QMetaObject::InvokeMetaMethod) {
+//        auto method = metaObject()->method(_id);
+//        auto sig = QMetaObject::normalizedSignature(method.methodSignature());
+//        qDebug() << "Invoke method" << sig;
+//        if (method.methodType() == QMetaMethod::Signal) {
+//            auto newId = _id - QObject::staticMetaObject.methodCount();
+//            QMetaObject::activate(this, metaObject(), newId, _a);
+//            return -1;
+//        } else {
+//            if (_id < QObject::staticMetaObject.methodCount()) {
+//                // Handle things like deleteLater internally
+//                return QObject::qt_metacall(_c, _id, _a);
+//            } else {
+//                // Forward on anything else
+//                return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same, but it appears to be the same so :shrug:
+//            }
+//        }
+//    } else if (_c == QMetaObject::IndexOfMethod ||
+//               _c == QMetaObject::ReadProperty || 
+//               _c == QMetaObject::WriteProperty ||
+//               _c == QMetaObject::ResetProperty) {
+//        qDebug() << "Property access!" << _c << _id;
+//        return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // This could be dangerous as _id might not be the same
+//    } else {
+//        qDebug() << "O no!" << _c << _id;
+//        return -1;
+//    }
+//}
 
 // This method gets run before main()
 // and is very limited in what it can do,
@@ -182,17 +203,96 @@ static const uint qt_meta_data_QmlSharedPointer[] = {
        //3,       // signalCount
 };
 
+//template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+//{
+//    qDebug() << "STATIC METACALL???";
+//    return;
+//}
+
 template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    return;
+    qDebug() << "METACALL";
+    auto *_t = static_cast<QmlSharedPointer<T> *>(_o);
+    auto *_child = _t->data();
+    Q_ASSERT(_child != nullptr);
+    //T::staticMetaObject.d.static_metacall(_child, _c, _id, _a);
+
+    //return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // Dangerous??
+    //Q_ASSERT(false);
+    //return -1;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto method = QmlSharedPointer<T>::staticMetaObject.method(_id);
+        auto sig = QMetaObject::normalizedSignature(method.methodSignature());
+        qDebug() << "Invoke method" << sig;
+        if (method.methodType() == QMetaMethod::Signal) {
+            auto newId = _id - QObject::staticMetaObject.methodCount();
+            QMetaObject::activate(_o, &staticMetaObject, newId, _a);
+            //return -1;
+        } else {
+            if (_id < QObject::staticMetaObject.methodCount()) {
+                // Handle things like deleteLater internally
+                //QObject::qt_static_metacall(_o, _c, _id, _a); // XXX
+            } else {
+                // Forward on anything else
+                _child->qt_metacall(_c, _id, _a);
+            }
+        }
+    } else if (_c == QMetaObject::IndexOfMethod ||
+               _c == QMetaObject::ReadProperty || 
+               _c == QMetaObject::WriteProperty ||
+               _c == QMetaObject::ResetProperty) {
+        qDebug() << "Property access!" << _c << _id;
+        _child->qt_metacall(_c, _id, _a);
+    } else {
+        qDebug() << "O no!" << _c << _id;
+    }
 }
 
 //QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::staticMetaObject{};
+//QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::staticMetaObject = { {
+//    &QObject::staticMetaObject,
+//    qt_meta_stringdata_QmlSharedPointer<T>.data,
+//    qt_meta_data_QmlSharedPointer,
+//    qt_static_metacall,
+//    nullptr,
+//    nullptr
+//} };
+
+template<typename T>
+const QMetaObject *QmlSharedPointer<T>::gen_superdata()
+{
+    return T::staticMetaObject.d.superdata;
+}
+
+template<typename T>
+const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
+{
+    return T::staticMetaObject.d.stringdata;
+}
+
+template<typename T>
+const uint *QmlSharedPointer<T>::gen_data()
+{
+    return T::staticMetaObject.d.data;
+}
+
+template<typename T>
+const QMetaObject * const *QmlSharedPointer<T>::gen_relatedMetaObjects()
+{
+    return T::staticMetaObject.d.relatedMetaObjects;
+}
+
+template<typename T>
+void *QmlSharedPointer<T>::gen_extradata()
+{
+    return T::staticMetaObject.d.extradata;
+}
+
 QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::staticMetaObject = { {
-    &QObject::staticMetaObject,
-    qt_meta_stringdata_QmlSharedPointer<T>.data,
-    qt_meta_data_QmlSharedPointer,
-    qt_static_metacall,
-    nullptr,
-    nullptr
+    QmlSharedPointer<T>::gen_superdata(),
+    QmlSharedPointer<T>::gen_stringdata(),
+    QmlSharedPointer<T>::gen_data(),
+    QmlSharedPointer<T>::qt_static_metacall,
+    QmlSharedPointer<T>::gen_relatedMetaObjects(),
+    QmlSharedPointer<T>::gen_extradata(),
 } };

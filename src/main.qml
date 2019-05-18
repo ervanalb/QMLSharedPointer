@@ -27,6 +27,9 @@ QtObject {
 
         o.fireSignal();
 
+        o.five = 6;
+        console.log(o.five);
+
         Qt.callLater(Qt.quit);
     }
 }
