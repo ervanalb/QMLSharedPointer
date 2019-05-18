@@ -105,13 +105,14 @@ public:
 
     void *qt_metacast(const char *_clname)
     {
-        qDebug() << "Attempted metacast";
+        //qDebug() << "Attempted metacast";
         return nullptr; // disable casting
     }
 
     int qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     {
-        const int n_methods = 8; // XXX
+        const int n_methods = staticMetaObject.methodCount() - staticMetaObject.d.superdata->methodCount();
+        const int n_properties = staticMetaObject.propertyCount() - staticMetaObject.d.superdata->propertyCount();
         _id = QObject::qt_metacall(_c, _id, _a);
         if (_id < 0)
             return _id;
@@ -124,46 +125,50 @@ public:
                 *reinterpret_cast<int*>(_a[0]) = -1;
             _id -= n_methods;
         }
+       else if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
+                || _c == QMetaObject::ResetProperty || _c == QMetaObject::RegisterPropertyMetaType) {
+            qt_static_metacall(this, _c, _id, _a);
+            _id -= n_properties;
+        } else if (_c == QMetaObject::QueryPropertyDesignable) {
+            _id -= n_properties;
+        } else if (_c == QMetaObject::QueryPropertyScriptable) {
+            _id -= n_properties;
+        } else if (_c == QMetaObject::QueryPropertyStored) {
+            _id -= n_properties;
+        } else if (_c == QMetaObject::QueryPropertyEditable) {
+            _id -= n_properties;
+        } else if (_c == QMetaObject::QueryPropertyUser) {
+            _id -= n_properties;
+        }
         return _id;
     }
 };
 
 template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    qDebug() << "METACALL";
     auto *_t = static_cast<QmlSharedPointer<T> *>(_o);
     auto *_child = _t->data();
     Q_ASSERT(_child != nullptr);
-    //T::staticMetaObject.d.static_metacall(_child, _c, _id, _a);
 
-    //return QmlSharedPointer<T>::data()->qt_metacall(_c, _id, _a); // Dangerous??
-    //Q_ASSERT(false);
-    //return -1;
     if (_c == QMetaObject::InvokeMetaMethod) {
+        _id += QObject::staticMetaObject.methodCount();
+
         auto method = QmlSharedPointer<T>::staticMetaObject.method(_id);
         auto sig = QMetaObject::normalizedSignature(method.methodSignature());
-        qDebug() << "Invoke method" << sig;
         if (method.methodType() == QMetaMethod::Signal) {
             auto newId = _id - QObject::staticMetaObject.methodCount();
             QMetaObject::activate(_o, &staticMetaObject, newId, _a);
-            //return -1;
         } else {
-            if (_id < QObject::staticMetaObject.methodCount()) {
-                // Handle things like deleteLater internally
-                //QObject::qt_static_metacall(_o, _c, _id, _a); // XXX
-            } else {
-                // Forward on anything else
-                _child->qt_metacall(_c, _id, _a);
-            }
+            _child->qt_metacall(_c, _id, _a);
         }
     } else if (_c == QMetaObject::IndexOfMethod ||
                _c == QMetaObject::ReadProperty || 
                _c == QMetaObject::WriteProperty ||
                _c == QMetaObject::ResetProperty) {
-        qDebug() << "Property access!" << _c << _id;
+        _id += QObject::staticMetaObject.propertyCount();
         _child->qt_metacall(_c, _id, _a);
     } else {
-        qDebug() << "O no!" << _c << _id;
+        Q_ASSERT(false); // Unhandled request
     }
 }
 
