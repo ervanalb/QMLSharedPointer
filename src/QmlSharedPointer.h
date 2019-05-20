@@ -3,7 +3,7 @@
 #include <QSharedPointer>
 #include <QMetaMethod>
 
-template <class T>
+template <class T, class B = QObject>
 class QmlSharedPointer
     : public QObject
     , public QSharedPointer<T>
@@ -32,7 +32,7 @@ private:
         {
             auto incomingSignal = T::staticMetaObject.method(i);
             if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
-            QMetaObject::connect(QmlSharedPointer<T>::data(), i, this, i);
+            QMetaObject::connect(QmlSharedPointer<T, B>::data(), i, this, i);
         }
     }
     void deinit()
@@ -44,7 +44,7 @@ private:
         {
             auto incomingSignal = T::staticMetaObject.method(i);
             if (incomingSignal.methodType() != QMetaMethod::Signal) continue;
-            QMetaObject::disconnect(QmlSharedPointer<T>::data(), i, this, i);
+            QMetaObject::disconnect(QmlSharedPointer<T, B>::data(), i, this, i);
         }
     }
     static const QMetaObject *gen_superdata();
@@ -79,7 +79,7 @@ public:
         init();
     }
 
-    QmlSharedPointer(const QmlSharedPointer<T> &other)
+    QmlSharedPointer(const QmlSharedPointer<T, B> &other)
         : QSharedPointer<T>(other)
     {
         init();
@@ -91,7 +91,7 @@ public:
         init();
     }
 
-    QmlSharedPointer<T>& operator=(const QmlSharedPointer<T>& d)
+    QmlSharedPointer<T, B>& operator=(const QmlSharedPointer<T, B>& d)
     {
         deinit();
         QSharedPointer<T>::operator=(d);
@@ -146,7 +146,7 @@ public:
     }
 };
 
-template <typename T> void QmlSharedPointer<T>::findAndActivateSignal(QObject *_o, int _id, void **_a)
+template <typename T, typename B> void QmlSharedPointer<T, B>::findAndActivateSignal(QObject *_o, int _id, void **_a)
 {
     // Find which base class the given signal is for
     auto current_metaobject = &staticMetaObject;
@@ -161,16 +161,16 @@ template <typename T> void QmlSharedPointer<T>::findAndActivateSignal(QObject *_
     }
 }
 
-template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+template <typename T, typename B> void QmlSharedPointer<T, B>::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    auto *_t = static_cast<QmlSharedPointer<T> *>(_o);
+    auto *_t = static_cast<QmlSharedPointer<T, B> *>(_o);
     auto *_child = _t->data();
     Q_ASSERT(_child != nullptr);
 
     if (_c == QMetaObject::InvokeMetaMethod) {
         _id += QObject::staticMetaObject.methodCount();
 
-        auto method = QmlSharedPointer<T>::staticMetaObject.method(_id);
+        auto method = QmlSharedPointer<T, B>::staticMetaObject.method(_id);
         auto sig = QMetaObject::normalizedSignature(method.methodSignature());
         if (method.methodType() == QMetaMethod::Signal) {
             findAndActivateSignal(_o, _id, _a);
@@ -188,14 +188,16 @@ template <typename T> void QmlSharedPointer<T>::qt_static_metacall(QObject *_o, 
     }
 }
 
-template<typename T>
-const QMetaObject *QmlSharedPointer<T>::gen_superdata()
+template<typename T, typename B>
+const QMetaObject *QmlSharedPointer<T, B>::gen_superdata()
 {
-    return T::staticMetaObject.d.superdata;
+    //return T::staticMetaObject.d.superdata;
+    return &B::staticMetaObject;
+    //return &QmlSharedPointer<B, B>::staticMetaObject;
 }
 
-template<typename T>
-const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
+template<typename T, typename B>
+const QByteArrayData *QmlSharedPointer<T, B>::gen_stringdata()
 {
     // The MOC always places the strings right after the QByteArrayDatas,
     // so we can back out the number of strings based on the first offset
@@ -232,29 +234,29 @@ const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
     return new_stringdata;
 }
 
-template<typename T>
-const uint *QmlSharedPointer<T>::gen_data()
+template<typename T, typename B>
+const uint *QmlSharedPointer<T, B>::gen_data()
 {
     return T::staticMetaObject.d.data;
 }
 
-template<typename T>
-const QMetaObject * const *QmlSharedPointer<T>::gen_relatedMetaObjects()
+template<typename T, typename B>
+const QMetaObject * const *QmlSharedPointer<T, B>::gen_relatedMetaObjects()
 {
     return T::staticMetaObject.d.relatedMetaObjects;
 }
 
-template<typename T>
-void *QmlSharedPointer<T>::gen_extradata()
+template<typename T, typename B>
+void *QmlSharedPointer<T, B>::gen_extradata()
 {
     return T::staticMetaObject.d.extradata;
 }
 
-QT_INIT_METAOBJECT template<typename T> const QMetaObject QmlSharedPointer<T>::staticMetaObject = { {
-    QmlSharedPointer<T>::gen_superdata(),
-    QmlSharedPointer<T>::gen_stringdata(),
-    QmlSharedPointer<T>::gen_data(),
-    QmlSharedPointer<T>::qt_static_metacall,
-    QmlSharedPointer<T>::gen_relatedMetaObjects(),
-    QmlSharedPointer<T>::gen_extradata(),
+QT_INIT_METAOBJECT template<typename T, typename B> const QMetaObject QmlSharedPointer<T, B>::staticMetaObject = { {
+    QmlSharedPointer<T, B>::gen_superdata(),
+    QmlSharedPointer<T, B>::gen_stringdata(),
+    QmlSharedPointer<T, B>::gen_data(),
+    QmlSharedPointer<T, B>::qt_static_metacall,
+    QmlSharedPointer<T, B>::gen_relatedMetaObjects(),
+    QmlSharedPointer<T, B>::gen_extradata(),
 } };

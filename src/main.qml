@@ -33,6 +33,9 @@ Item {
         o.five = 6;
         console.log(o.five);
 
+        o.four = 6;
+        console.log(o.four);
+
         Qt.callLater(Qt.quit);
     }
 }
