@@ -2,7 +2,8 @@ import QtQuick 2.0
 import com.example.qsp 1.0
 
 Item {
-    ExampleQmlObjectSP {
+    ChildQmlObjectSP {
+    //ExampleQmlObjectSP {
         id: o
 
         onStringChanged: {

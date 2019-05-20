@@ -1,6 +1,5 @@
 #include "ExampleQmlObject.h"
 #include <QDebug>
-#include <QQmlEngine>
 
 ExampleQmlObject::ExampleQmlObject() {
     qDebug() << "Constructed!" << this;
