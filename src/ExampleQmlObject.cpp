@@ -29,6 +29,11 @@ void ExampleQmlObject::setFive(int five) {
     qDebug() << "You can't change five!";
 }
 
+ExampleQmlObject *ExampleQmlObject::frobObject(ExampleQmlObject *object) {
+    qDebug() << object << "was frobnicated";
+    return object;
+}
+
 ExampleQmlObject::~ExampleQmlObject() {
     qDebug() << "Destructed!" << this;
 }

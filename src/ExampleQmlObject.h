@@ -24,6 +24,7 @@ public slots:
     void fireSignal();
     int getFive();
     void setFive(int five);
+    ExampleQmlObject *frobObject(ExampleQmlObject *object);
 
 private:
     int m_integer{};

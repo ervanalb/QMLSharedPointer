@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QSharedPointer>
+#include <QMetaMethod>
 
 template <class T>
 class QmlSharedPointer
@@ -181,11 +182,9 @@ const QMetaObject *QmlSharedPointer<T>::gen_superdata()
 template<typename T>
 const QByteArrayData *QmlSharedPointer<T>::gen_stringdata()
 {
-    int n_strings = T::staticMetaObject.constructorCount()
-                  + T::staticMetaObject.classInfoCount()
-                  + T::staticMetaObject.enumeratorCount()
-                  + T::staticMetaObject.methodCount()
-                  + T::staticMetaObject.propertyCount();
+    // The MOC always places the strings right after the QByteArrayDatas,
+    // so we can back out the number of strings based on the first offset
+    int n_strings = T::staticMetaObject.d.stringdata[0].offset / sizeof (T::staticMetaObject.d.stringdata[0]);
 
     // Copy the child's string data
     // (copy the lookup table, but don't copy the actual strings.
