@@ -55,19 +55,26 @@ private:
     static void findAndActivateSignal(QObject *_o, int _id, void **_a);
 
 public:
-    template<class Q = B>
-    static
-    typename std::enable_if<!std::is_same<Q, QObject>::value, int>::type
-    dynamic_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+    static int dynamic_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
     {
+        //qDebug() << "Welcome to dynamic_metacall on" << staticMetaObject.className();
         const int n_methods = staticMetaObject.methodCount() - staticMetaObject.superClass()->methodCount();
         const int n_properties = staticMetaObject.propertyCount() - staticMetaObject.superClass()->propertyCount();
-        _id = B::dynamic_metacall(_o, _c, _id, _a);
+        //qDebug() << "First off, lets call" << B::staticMetaObject.className() << "dynamic_metacall.";
+        _id = parent_metacall(_o, _c, _id, _a);
+        //qDebug() << "ID is now" << _id;
         if (_id < 0)
             return _id;
         if (_c == QMetaObject::InvokeMetaMethod) {
             if (_id < n_methods)
+            {
+                //qDebug() << "Matches" << staticMetaObject.className();
                 qt_static_metacall(_o, _c, _id, _a);
+            }
+            else
+            {
+                //qDebug() << "Doesn't match" << staticMetaObject.className();
+            }
             _id -= n_methods;
         } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
             if (_id < n_methods)
@@ -94,11 +101,18 @@ public:
 
     template<class Q = B>
     static
-    typename std::enable_if<std::is_same<Q, QObject>::value, int>::type
-    dynamic_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+    typename std::enable_if<!std::is_same<Q, QObject>::value, int>::type
+    parent_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
     {
-        _id = ((QObject *)_o)->qt_metacall(_c, _id, _a);
-        return _id;
+        return B::dynamic_metacall(_o, _c, _id, _a);
+    }
+
+    template<class Q = B>
+    static
+    typename std::enable_if<std::is_same<Q, QObject>::value, int>::type
+    parent_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+    {
+        return _o->QObject::qt_metacall(_c, _id, _a);
     }
 
     QmlSharedPointer()
@@ -159,6 +173,7 @@ public:
 
     int qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     {
+        //Debug() << "qt_metacall" << _c << _id;
         return dynamic_metacall(this, _c, _id, _a);
     }
 };
