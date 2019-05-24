@@ -1,5 +1,11 @@
 #pragma once
 
+// Please excuse this code. We are trying to do something that Qt really doesn't
+// want us to do, and as such, this class is a mess. This code is not a role
+// model. Do not look up to this code. Do not base your code on this code. In
+// order to do what it does, it has made terrible sacrifices and has blood on its
+// hands. Use it only when necessary.
+
 #include <QSharedPointer>
 #include <QMetaMethod>
 
