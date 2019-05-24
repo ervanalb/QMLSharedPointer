@@ -178,50 +178,6 @@ public:
     }
 };
 
-//template <typename T, typename B>
-//typename std::enable_if<std::is_same<B, QObject>::value, int>::type
-//QmlSharedPointer<T, B>::dynamic_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-//{
-//    _id = ((QObject *)_o)->qt_metacall(_c, _id, _a);
-//    return _id;
-//}
-
-//template <typename T, typename B>
-//typename std::enable_if<!std::is_same<B, QObject>::value, int>::type
-//QmlSharedPointer<T, B>::dynamic_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-//{
-//    const int n_methods = staticMetaObject.methodCount() - staticMetaObject.superClass()->methodCount();
-//    const int n_properties = staticMetaObject.propertyCount() - staticMetaObject.superClass()->propertyCount();
-//    _id = B::dynamic_metacall(_o, _c, _id, _a);
-//    if (_id < 0)
-//        return _id;
-//    if (_c == QMetaObject::InvokeMetaMethod) {
-//        if (_id < n_methods)
-//            qt_static_metacall(_o, _c, _id, _a);
-//        _id -= n_methods;
-//    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-//        if (_id < n_methods)
-//            *reinterpret_cast<int*>(_a[0]) = -1;
-//        _id -= n_methods;
-//    }
-//    else if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
-//          || _c == QMetaObject::ResetProperty || _c == QMetaObject::RegisterPropertyMetaType) {
-//        qt_static_metacall(_o, _c, _id, _a);
-//        _id -= n_properties;
-//    } else if (_c == QMetaObject::QueryPropertyDesignable) {
-//        _id -= n_properties;
-//    } else if (_c == QMetaObject::QueryPropertyScriptable) {
-//        _id -= n_properties;
-//    } else if (_c == QMetaObject::QueryPropertyStored) {
-//        _id -= n_properties;
-//    } else if (_c == QMetaObject::QueryPropertyEditable) {
-//        _id -= n_properties;
-//    } else if (_c == QMetaObject::QueryPropertyUser) {
-//        _id -= n_properties;
-//    }
-//    return _id;
-//}
-
 template <typename T, typename B> void QmlSharedPointer<T, B>::findAndActivateSignal(QObject *_o, int _id, void **_a)
 {
     // Find which base class the given signal is for
@@ -243,7 +199,7 @@ template <typename T, typename B> void QmlSharedPointer<T, B>::qt_static_metacal
     auto *_child = _t->data();
     Q_ASSERT(_child != nullptr);
 
-    qDebug() << "Static metacall on..." << staticMetaObject.className() << _o << _c << _id;
+    //qDebug() << "Static metacall on..." << staticMetaObject.className() << _o << _c << _id;
 
     if (_c == QMetaObject::InvokeMetaMethod) {
         auto newId = _id + staticMetaObject.superClass()->methodCount();
@@ -251,6 +207,7 @@ template <typename T, typename B> void QmlSharedPointer<T, B>::qt_static_metacal
         auto method = QmlSharedPointer<T, B>::staticMetaObject.method(newId);
         auto sig = QMetaObject::normalizedSignature(method.methodSignature());
         if (method.methodType() == QMetaMethod::Signal) {
+            //qDebug() << "Firing signal" << sig;
             QMetaObject::activate(_o, &staticMetaObject, _id, _a);
         } else {
             _child->qt_metacall(_c, newId, _a);
@@ -259,7 +216,8 @@ template <typename T, typename B> void QmlSharedPointer<T, B>::qt_static_metacal
                _c == QMetaObject::ReadProperty ||
                _c == QMetaObject::WriteProperty ||
                _c == QMetaObject::ResetProperty) {
-        auto newId = _id + QObject::staticMetaObject.propertyCount();
+        auto newId = _id + staticMetaObject.superClass()->propertyCount();
+        //qDebug() << "Access property" << newId;
         _child->qt_metacall(_c, newId, _a);
     } else {
         Q_ASSERT(false); // Unhandled request
@@ -269,9 +227,7 @@ template <typename T, typename B> void QmlSharedPointer<T, B>::qt_static_metacal
 template<typename T, typename B>
 const QMetaObject *QmlSharedPointer<T, B>::gen_superdata()
 {
-    //return T::staticMetaObject.d.superdata;
     return &B::staticMetaObject;
-    //return &QmlSharedPointer<B, B>::staticMetaObject;
 }
 
 template<typename T, typename B>
