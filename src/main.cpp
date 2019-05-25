@@ -5,9 +5,6 @@
 #include "QmlSharedPointer.h"
 #include <QDebug>
 
-typedef QmlSharedPointer<ExampleQmlObject>ExampleQmlObjectSP; 
-typedef QmlSharedPointer<ChildQmlObject, ExampleQmlObjectSP> ChildQmlObjectSP;
-
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);

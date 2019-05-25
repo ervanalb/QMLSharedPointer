@@ -28,9 +28,9 @@ void ExampleQmlObject::setFive(int five) {
     qDebug() << "You can't change five!";
 }
 
-ExampleQmlObject *ExampleQmlObject::frobObject(ExampleQmlObject *object) {
+ExampleQmlObjectSP *ExampleQmlObject::frobObject(ExampleQmlObjectSP *object) {
     qDebug() << object << "was frobnicated";
-    return object;
+    return object->clone();
 }
 
 ExampleQmlObject::~ExampleQmlObject() {

@@ -1,6 +1,10 @@
 #pragma once
 
 #include <QObject>
+#include "QmlSharedPointer.h"
+
+class ExampleQmlObject;
+typedef QmlSharedPointer<ExampleQmlObject>ExampleQmlObjectSP;
 
 class ExampleQmlObject : public QObject {
     Q_OBJECT
@@ -24,9 +28,12 @@ public slots:
     void fireSignal();
     int getFive();
     void setFive(int five);
-    ExampleQmlObject *frobObject(ExampleQmlObject *object);
+    ExampleQmlObjectSP *frobObject(ExampleQmlObjectSP *object);
 
 private:
     int m_integer{};
     QString m_string{};
 };
+
+//typedef QmlSharedPointer<ExampleQmlObject>ExampleQmlObjectSP;
+Q_DECLARE_METATYPE(ExampleQmlObjectSP*);

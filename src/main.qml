@@ -36,6 +36,10 @@ Item {
         o.four = 6;
         console.log(o.four);
 
+        var tmp = o.frobObject(o);
+
+        console.log(tmp.four);
+
         Qt.callLater(Qt.quit);
     }
 }

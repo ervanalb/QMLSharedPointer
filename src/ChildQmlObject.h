@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ExampleQmlObject.h"
+#include "QmlSharedPointer.h"
 
 class ChildQmlObject : public ExampleQmlObject {
     Q_OBJECT
@@ -14,3 +15,7 @@ public slots:
     int getFour();
     void setFour(int four);
 };
+
+typedef QmlSharedPointer<ChildQmlObject, ExampleQmlObjectSP> ChildQmlObjectSP;
+Q_DECLARE_METATYPE(ChildQmlObjectSP*);
+
