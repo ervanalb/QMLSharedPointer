@@ -29,7 +29,7 @@ void ExampleQmlObject::setFive(int five) {
 }
 
 ExampleQmlObjectSP *ExampleQmlObject::frobObject(ExampleQmlObjectSP *object) {
-    qDebug() << object << "was frobnicated";
+    qDebug() << object << "was frobnicated. integer is" << (*object)->m_integer;
     return object->clone();
 }
 

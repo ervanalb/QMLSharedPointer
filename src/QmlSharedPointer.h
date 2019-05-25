@@ -13,45 +13,39 @@
 template <class T, class B>
 class QmlSharedPointer;
 
-template <class T>
 class QmlSharedPointerBase
     : public QObject
-    , public QSharedPointer<T>
+    , public QSharedPointer<QObject>
 {
 public:
-    QmlSharedPointerBase()
-        : QSharedPointer<T>(new T())
-    {
-    }
-
     template <typename X> explicit QmlSharedPointerBase(X *ptr)
-        : QSharedPointer<T>(ptr)
+        : QSharedPointer<QObject>(ptr)
     {
     }
 
     template <typename X, typename Deleter> QmlSharedPointerBase(X *ptr, Deleter d)
-        : QSharedPointer<T>(ptr, d)
+        : QSharedPointer<QObject>(ptr, d)
     {
     }
 
-    QmlSharedPointerBase(const QSharedPointer<T> &other)
-        : QSharedPointer<T>(other)
+    QmlSharedPointerBase(const QSharedPointer<QObject> &other)
+        : QSharedPointer<QObject>(other)
     {
     }
 
-    QmlSharedPointerBase(const QmlSharedPointerBase<T> &other)
-        : QSharedPointer<T>(other)
+    QmlSharedPointerBase(const QmlSharedPointerBase &other)
+        : QSharedPointer<QObject>(other)
     {
     }
 
-    QmlSharedPointerBase(const QWeakPointer<T> &other)
-        : QSharedPointer<T>(other)
+    QmlSharedPointerBase(const QWeakPointer<QObject> &other)
+        : QSharedPointer<QObject>(other)
     {
     }
 
-    QmlSharedPointerBase& operator=(const QmlSharedPointerBase<T>& d)
+    QmlSharedPointerBase& operator=(const QmlSharedPointerBase& d)
     {
-        QSharedPointer<T>::operator=(d);
+        QSharedPointer<QObject>::operator=(d);
         return *this;
     }
 
@@ -61,7 +55,7 @@ public:
     }
 };
 
-template <class T, class B = QmlSharedPointerBase<T>>
+template <class T, class B = QmlSharedPointerBase>
 class QmlSharedPointer
     : public B
 {
@@ -192,6 +186,16 @@ public:
         B::operator=(d);
         init();
         return *this;
+    }
+
+    T &	operator*() const
+    {
+        return *(T*)QSharedPointer<QObject>::data();
+    }
+
+    T *	operator->() const
+    {
+        return (T*)QSharedPointer<QObject>::data();
     }
 
     virtual QmlSharedPointer<T, B> *clone()
